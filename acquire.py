@@ -21,7 +21,7 @@ def new_zillow_data():
     This function reads the zillow data from the Codeup db into a df.
     '''
     sql_query = """
-                SELECT parcelid, airconditioningtypeid, architecturalstyletypeid, basementsqft, bathroomcnt, bedroomcnt, calculatedfinishedsquarefeet, fips, fireplacecnt, garagecarcnt, hashottuborspa, poolcnt, propertylandusetypeid, regionidneighborhood, storytypeid, typeconstructiontypeid, unitcnt, yearbuilt, numberofstories, taxamount, taxvaluedollarcnt
+                SELECT parcelid, airconditioningtypeid, heatingorsystemtypeid, architecturalstyletypeid, basementsqft, bathroomcnt, bedroomcnt, calculatedfinishedsquarefeet, fips, fireplacecnt, garagecarcnt, hashottuborspa, poolcnt, propertylandusetypeid, regionidneighborhood, storytypeid, typeconstructiontypeid, unitcnt, yearbuilt, numberofstories, taxamount, taxvaluedollarcnt
                 FROM properties_2017
                 JOIN predictions_2017 USING(parcelid)
                 WHERE propertylandusetypeid IN ('261', '264', '273', '276')
