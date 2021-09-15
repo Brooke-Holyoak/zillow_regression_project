@@ -37,7 +37,7 @@ def new_zillow_data():
 
 def get_zillow_data():
     '''
-    This function reads in telco data from Codeup database, writes data to
+    This function reads in zillow data from Codeup database, writes data to
     a csv file if a local file does not exist, and returns a df.
     '''
     if os.path.isfile('zillow_df.csv'):
@@ -61,12 +61,25 @@ def clean_zillow_data(df):
     and cleans up the data by dropping necessary rows and/or columns,
     encoding and/or renaming columns, changing datatypes where necessary, etc. 
     '''
+    
+    #use only necessary columns (left out column that was only needed to join tables in SQL)
+    df = df[['parcelid', 'bathroomcnt', 'bedroomcnt', 'calculatedfinishedsquarefeet', 'fips', 'propertylandusetypeid', 'unitcnt', 'yearbuilt', 'taxamount', 'taxvaluedollarcnt']]
+    
+    #handling the unitcnt column- dropping all rows where unitcnt is 2, but leaving null assuming they are indeed single unit properties due to the propertylandusetype
+    two_units = df[df.unitcnt == 2].index
+    df = df.drop(two_units)
+    df = df.drop(columns='unitcnt')
+    
+    
     #drop rows with null values
     df = df.dropna()
     
     #Convert the fips columns from float to object since they are not numbers to be calculated, and the year and calculatedsquarefeet column
     # from float to integer since it is not necessary to show decimal places
     df = df.astype({"yearbuilt": int, "fips": object, "calculatedfinishedsquarefeet": int})
+    
+    #change yearbuilt to object now that decimal .0 is dropped 
+    df = df.astype({"yearbuilt": object})
     
     # Create dummy columns for fips since each code represents a county
     dummy_df = pd.get_dummies(df[['fips']], dummy_na=False)
@@ -78,6 +91,16 @@ def clean_zillow_data(df):
     #According to FIPS codes, 06037 is Los Angeles County, 06059 is Orange County, and 06111 is Ventura County
     #Rename columns for better readability and simplicity
     df = df.rename(columns={"fips_6037.0": "la_county", "fips_6059.0": "orange_county", "fips_6111.0": "ventura_county", "bedroomcnt": "bedrooms", "bathroomcnt": "bathrooms", "calculatedfinishedsquarefeet": "total_sqft", "taxvaluedollarcnt": "tax_value", "yearbuilt": "year_built"})
+    
+    #we need a column that contains the tax rate, called 'tax_rate'
+    #i will calculate that by taxamount / tax_value
+
+    df['tax_rate'] = round((df.taxamount / df.tax_value), ndigits = 4)
+    #note that tax_rate should not be a feature used in any model since it inherently contains the target
+    
+    return df
+
+def split_df(df):
     
     # train/validate/test split
     train_validate, test = train_test_split(df, test_size=.2, random_state=123)
